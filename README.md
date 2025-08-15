@@ -17,20 +17,6 @@ A modular Python implementation of a **Deep Q-Network (DQN) agent** for stock tr
 ---
 
 ## Installation
-
-Clone the repository:
-
-```bash
-git clone https://github.com/your-username/deep-dqn-stock-trader.git
-cd deep-dqn-stock-trader
-
-Create a virtual environment and install dependencies:
-
-python -m venv venv
-source venv/bin/activate   # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
-```
-## Installation
 Clone the repository:
 ```bash
 git clone https://github.com/your-username/deep-dqn-stock-trader.git
@@ -50,7 +36,7 @@ Optional: If you have CUDA-enabled GPU, make sure your PyTorch version supports 
 All hyperparameters and settings are in config.py:
 ```bash
 # Example: config.py
-STOCK_CSV = "data/stock_prices.csv"
+STOCK_CSV = "data/AAPL_data.csv"
 INITIAL_BALANCE = 10000
 BATCH_SIZE = 64
 GAMMA = 0.99
@@ -124,6 +110,14 @@ deep-dqn-stock-trader/
 + **evaluate.p** — Script to evaluate a trained agent
 + **plots/** — Stores reward and performance plots
 + **data/** — Folder for stock price CSV files
+
+## Data Source
+
+The stock price data used in this project is sourced from [Kaggle: S&P 500 5-Year Individual Stocks](https://www.kaggle.com/datasets/szrlee/stock-time-series-5yr)  
+Specifically, the AAPL stock data CSV: `individual_stocks_5yr/AAPL_data.csv`.
+
+Please follow the original license/terms of use from Kaggle when using this data.
+
 
 ## License
 
