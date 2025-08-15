@@ -67,7 +67,8 @@ python train.py
   
 Example reward plot generated:
 
-'plots/rewards.png'
+<img width="583" height="455" alt="rewards" src="https://github.com/user-attachments/assets/97a7e491-f8c7-4010-b453-fabd01b1b7b4" />
+
 
 ### Evaluating the Agent
 ```bash
@@ -78,7 +79,7 @@ python evaluate.py
 + Generates trading performance plots:
   1. `plots/balance.png` — Shows portfolio balance over time
   2. `plots/positions.png` — Shows buy/sell actions on stock price
-  3. `plots/rewards_eval.png` — Reward per evaluation episode
+  3. `plots/rewards_eval.png` — Reward per time step during evaluation
 
 Project Structure
 
