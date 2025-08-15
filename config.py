@@ -12,6 +12,7 @@ class Config:
     target_update = 10
     memory_size = 10000
     n_step = 3
+    epsilon = 0.1
 
     # Training
     EPISODES = 500
