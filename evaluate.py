@@ -5,61 +5,71 @@ from environment.stock_env import StockEnv
 from agent.dqn_agent import DQNAgent
 from config import Config
 
-# Ensure plots directory exists
+# Create plots folder if it doesn't exist
 os.makedirs("plots", exist_ok=True)
 
-# Load stock data
+# Load data
 data = pd.read_csv(Config.STOCK_CSV)
+
+# Initialize environment and agent
 env = StockEnv(data)
 agent = DQNAgent(env.observation_space.shape[0], env.action_space.n, Config)
 
-# Load trained model
-agent.load_model("models/dqn_model.pth")
-
+# Reset environment
 state = env.reset()
 done = False
 
-portfolio_values = []
-positions = []  # 1 = buy, -1 = sell, 0 = hold
+# Track metrics
+balance_history = []
+positions = []
 rewards_eval = []
 
 while not done:
     action = agent.select_action(state, epsilon=0)  # deterministic
     next_state, reward, done, info = env.step(action)
-    state = next_state
 
-    portfolio_values.append(info.get("portfolio_value", 0))
-    positions.append(action - 1)  # assuming action 0=hold,1=buy,2=sell
+    balance_history.append(env.balance)
+    positions.append((env.current_step, action))
     rewards_eval.append(reward)
 
-# Save portfolio balance plot
-plt.plot(portfolio_values)
-plt.xlabel("Step")
-plt.ylabel("Portfolio Value")
+    state = next_state
+
+# --- PLOTS ---
+
+# 1. Portfolio Balance
+plt.figure()
+plt.plot(balance_history)
 plt.title("Portfolio Balance Over Time")
+plt.xlabel("Time Step")
+plt.ylabel("Balance ($)")
+plt.grid(True)
 plt.savefig("plots/balance.png")
 plt.close()
 
-# Save positions plot
-plt.figure(figsize=(12, 6))
-plt.plot(data['Close'], label="Stock Price")
-buy_signals = [i if pos==1 else None for i, pos in enumerate(positions)]
-sell_signals = [i if pos==-1 else None for i, pos in enumerate(positions)]
-plt.scatter(buy_signals, data['Close'][buy_signals], marker="^", color="g", label="Buy")
-plt.scatter(sell_signals, data['Close'][sell_signals], marker="v", color="r", label="Sell")
-plt.xlabel("Step")
-plt.ylabel("Price")
-plt.title("Trading Actions")
+# 2. Buy/Sell Positions
+plt.figure()
+plt.plot(data["Close"], label="Close Price")
+buys = [step for step, act in positions if act == 1]
+sells = [step for step, act in positions if act == 2]
+plt.scatter(buys, data["Close"].iloc[buys], marker="^", color="g", label="Buy")
+plt.scatter(sells, data["Close"].iloc[sells], marker="v", color="r", label="Sell")
+plt.title("Buy/Sell Positions on Stock Price")
+plt.xlabel("Time Step")
+plt.ylabel("Price ($)")
 plt.legend()
+plt.grid(True)
 plt.savefig("plots/positions.png")
 plt.close()
 
-# Save evaluation rewards
+# 3. Rewards During Evaluation
+plt.figure()
 plt.plot(rewards_eval)
-plt.xlabel("Step")
+plt.title("Reward per Step (Evaluation)")
+plt.xlabel("Time Step")
 plt.ylabel("Reward")
-plt.title("Evaluation Rewards")
+plt.grid(True)
 plt.savefig("plots/rewards_eval.png")
 plt.close()
 
+# Summary
 print(f"Total evaluation reward: {sum(rewards_eval)}")
