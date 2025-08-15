@@ -14,4 +14,4 @@ class Config:
     n_step = 3
 
     # Training
-    num_episodes = 500
+    EPISODES = 500
