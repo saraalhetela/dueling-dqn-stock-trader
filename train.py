@@ -27,6 +27,7 @@ for episode in range(Config.EPISODES):
         agent.learn()
         state = next_state
         total_reward += reward
+    epsilon = max(0.1, 1 - 0.9 * (k / 200000))
 
     all_rewards.append(total_reward)
     print(f"Episode {episode + 1}/{Config.EPISODES}, Reward: {total_reward}")
