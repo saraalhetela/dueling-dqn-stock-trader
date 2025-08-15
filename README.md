@@ -30,22 +30,70 @@ python -m venv venv
 source venv/bin/activate   # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
+## Installation
+Clone the repository:
+```bash
+git clone https://github.com/your-username/deep-dqn-stock-trader.git
+cd deep-dqn-stock-trader
+```
+Create a virtual environment and install dependencies:
 
+```bash
+python -m venv venv
+source venv/bin/activate   # Windows: venv\Scripts\activate
+pip install -U pip
+pip install -r requirements.txt
+```
+Optional: If you have CUDA-enabled GPU, make sure your PyTorch version supports GPU for faster training.
+
+## Configuration
+All hyperparameters and settings are in config.py:
+```bash
+# Example: config.py
+STOCK_CSV = "data/stock_prices.csv"
+INITIAL_BALANCE = 10000
+BATCH_SIZE = 64
+GAMMA = 0.99
+LR = 0.001
+EPISODES = 500
+```
+Update STOCK_CSV to point to your stock data CSV file.
+
+## Data Format
+
+Place your stock price CSV in the `data/` folder:
+```bash
+data/stock_prices.csv
+```
+The CSV should include:
+| Date       | Open  | High  | Low  | Close | Volume |
+| ---------- | ----- | ----- | ---- | ----- | ------ |
+| 2025-01-01 | 100.0 | 102.0 | 99.5 | 101.0 | 10000  |
 
 ## Usage
 ### Training the Agent
 ```bash
 python train.py
 ```
++ Trains the DQN agent on historical stock data
++ Saves the trained model to `models/`
++ Generates reward plots in `plots/`
+  
+Example reward plot generated:
 
-The agent will train on the stock data defined in config.py and save the model and reward plots to plots/.
+'plots/rewards.png'
 
 ### Evaluating the Agent
 ```bash
 python evaluate.py
 ```
++ Loads a trained model
++ Simulates trading on historical data
++ Generates trading performance plots:
+  1. `plots/balance.png` — Shows portfolio balance over time
+  2. `plots/positions.png` — Shows buy/sell actions on stock price
+  3. `plots/rewards_eval.png` — Reward per evaluation episode
 
-Generates trading performance plots and prints evaluation metrics.
 Project Structure
 
 ```
@@ -63,9 +111,9 @@ deep-dqn-stock-trader/
 │   ├── __init__.py
 │   └── memory.py
 ├── train.py
-├── evaluate.py
-├── plots/
-└── data/
+├── evaluate.py 
+├── plots/        # stores reward/performance plots
+└── data/         # stock CSV files
 ```
 
 + **config.py** — Hyperparameters and environment settings
@@ -77,14 +125,16 @@ deep-dqn-stock-trader/
 + **plots/** — Stores reward and performance plots
 + **data/** — Folder for stock price CSV files
 
-### Data Format
+## License
 
-Place your stock price CSV in the data/ folder. Example:
-```bash
-data/stock_prices.csv
-```
+MIT License. See LICENSE for details.
 
-The CSV should include:
-| Date       | Open  | High  | Low  | Close | Volume |
-| ---------- | ----- | ----- | ---- | ----- | ------ |
-| 2025-01-01 | 100.0 | 102.0 | 99.5 | 101.0 | 10000  |
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (git checkout -b feature-name)
+3. Commit your changes (git commit -m "Add feature")
+4. Push to the branch (git push origin feature-name)
+5. Open a Pull Request
+
+
