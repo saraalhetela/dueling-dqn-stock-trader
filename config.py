@@ -1,4 +1,6 @@
 class Config:
+    STOCK_CSV = "data/AAPL_data.csv"
+    
     # Environment
     initial_balance = 10000
     max_steps = 200
