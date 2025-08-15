@@ -3,7 +3,7 @@
 [![Python Version](https://img.shields.io/badge/python-3.10+-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green)](https://opensource.org/licenses/MIT)
 [![PyTorch](https://img.shields.io/badge/pytorch-2.1-red)](https://pytorch.org/)
-[![GitHub Issues](https://img.shields.io/github/issues/your-username/deep-dqn-stock-trader)](https://github.com/your-username/deep-dqn-stock-trader/issues)
+[![GitHub Issues](https://img.shields.io/github/issues/saraalhetela/deep-dqn-stock-trader)](https://github.com/your-username/deep-dqn-stock-trader/issues)
 
 A modular Python implementation of a **Deep Q-Network (DQN) agent** for stock trading. This framework allows you to train and evaluate reinforcement learning agents on historical stock data using PyTorch and Gym-style environments.
 
