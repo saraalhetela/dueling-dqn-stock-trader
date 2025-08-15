@@ -21,7 +21,7 @@ for episode in range(Config.EPISODES):
     total_reward = 0
 
     while not done:
-        action = agent.select_action(state)
+        action = agent.select_action(state, epsilon)
         next_state, reward, done, _ = env.step(action)
         agent.store_transition(state, action, reward, next_state, done)
         agent.learn()
