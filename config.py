@@ -13,4 +13,3 @@ class Config:
 
     # Training
     num_episodes = 500
-
