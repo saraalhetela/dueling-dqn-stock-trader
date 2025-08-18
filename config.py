@@ -5,7 +5,6 @@ class Config:
     gamma = 0.99
     learning_rate = 0.0001
     epsilon = 1.
-    k=0
 
     
     initial_balance = 10000
