@@ -5,42 +5,74 @@ import random
 import numpy as np
 from utils.memory import ReplayMemory
 
-class DQN(nn.Module):
-    def __init__(self, input_dim, output_dim):
-        super(DQN, self).__init__()
-        self.fc1 = nn.Linear(input_dim, 128)
-        self.fc2 = nn.Linear(128, 128)
-        self.fc3 = nn.Linear(128, output_dim)
+class dueling_Conv1D_Q_Net(nn.Module):
+    def __init__(self, input_depth_length, output_shape):
+        super(dueling_Conv1D_Q_Net, self).__init__()
+        self.conv1 = torch.nn.Conv1d(input_depth_length, 128, 5)
+        self.conv2 = torch.nn.Conv1d(128, 128, 5)
+        self.state_value_linear1 = torch.nn.Linear(5376, 512)
+        self.state_value_linear2 = torch.nn.Linear(512, 1)
+        self.advantage_linear1 = torch.nn.Linear(5376, 512)
+        self.advantage_linear2 = torch.nn.Linear(512, output_shape)
+        self.activation = torch.nn.ReLU()
+        self.flatten = torch.nn.Flatten()
 
     def forward(self, x):
-        x = torch.relu(self.fc1(x))
-        x = torch.relu(self.fc2(x))
-        return self.fc3(x)
+        x = self.activation(self.conv1(x))
+        x = self.activation(self.conv2(x))
+        x = self.flatten(x)
+        val = self.activation(self.state_value_linear1(x))
+        val = self.state_value_linear2(val)
+        adv = self.activation(self.advantage_linear1(x))
+        adv = self.advantage_linear2(adv)
+        return val + adv - adv.mean(dim=1, keepdim=True)
 
-class DQNAgent:
-    def __init__(self, state_dim, action_dim, config):
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.policy_net = DQN(state_dim, action_dim).to(self.device)
-        self.target_net = DQN(state_dim, action_dim).to(self.device)
-        self.target_net.load_state_dict(self.policy_net.state_dict())
-        self.optimizer = optim.Adam(self.policy_net.parameters(), lr=config.lr)
-        self.memory = ReplayMemory(config.memory_size)
-        self.gamma = config.gamma
-        self.batch_size = config.batch_size
-        self.target_update = config.target_update
-        self.n_step = config.n_step
-        self.steps_done = 0
+def batch_target_for_nsteps_dqn(nsteps_reward_batch, gamma, maxQ, nsteps_done_batch, device="cpu"):
+    Y_list = []
+    for i, rewards in enumerate(nsteps_reward_batch):
+        Y = torch.tensor(np.dot([gamma**j for j in range(len(rewards))], rewards)).to(device)
+        Y += gamma**len(rewards) * maxQ[i] * (1 - nsteps_done_batch[i])
+        Y_list.append(Y)
+    return torch.stack(Y_list).float().to(device)
 
-    def select_action(self, state, epsilon):
-        if random.random() < epsilon:
-            return random.randrange(self.policy_net.fc3.out_features)
-        with torch.no_grad():
-            state = torch.tensor(state, dtype=torch.float32).unsqueeze(0).to(self.device)
-            return self.policy_net(state).argmax().item()
 
-    def optimize(self):
-        if len(self.memory) < self.batch_size:
-            return
-        transitions = self.memory.sample(self.batch_size)
-        # Implement optimization step here
+def preprocess_state(state, input_shape, add_noise=False):
+    if add_noise:
+        return state.reshape(*input_shape) + np.random.rand(*input_shape) / 100.0
+    return state.reshape(*input_shape)
 
+
+def get_action(Q_val, num_actions, epsilon):
+    return np.random.randint(0, num_actions) if random.random() < epsilon else np.argmax(Q_val, 1)[0]
+
+
+def update(loss, optimizer):
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
+
+# DQN Helpers
+def get_batch_for_nsteps_dqn(replay, batch_size, nsteps=1, device="cpu"):
+    if nsteps < 1:
+        nsteps = 1
+    minibatch_idx = random.sample(range(len(replay)), batch_size)
+    minibatch = [replay[idx] for idx in minibatch_idx]
+    nsteps_next_state_batch = []
+    nsteps_reward_batch = []
+    nsteps_done_batch = []
+    state1_batch = torch.cat([s1 for (s1, a, r, s2, d) in minibatch]).float().to(device)
+    action1_batch = torch.tensor([a for (s1, a, r, s2, d) in minibatch]).long().to(device)
+    for exp_idx in minibatch_idx:
+        nsteps_reward = []
+        for step in range(nsteps):
+            exp = replay[min(exp_idx + step, len(replay) - 1)]
+            _, _, r, s2, d = exp
+            nsteps_reward.append(r)
+            if d or step == nsteps - 1:
+                nsteps_next_state_batch.append(s2)
+                nsteps_done_batch.append(d)
+                break
+        nsteps_reward_batch.append(nsteps_reward)
+    nsteps_next_state_batch = torch.cat(nsteps_next_state_batch).float().to(device)
+    nsteps_done_batch = torch.tensor(nsteps_done_batch).long().to(device)
+    return state1_batch, action1_batch, nsteps_next_state_batch, nsteps_reward_batch, nsteps_done_batch
