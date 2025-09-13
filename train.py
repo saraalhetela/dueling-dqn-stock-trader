@@ -1,5 +1,4 @@
 # train.py
-def train_agent(model, data, device="cuda"):
     import torch
     import numpy as np
     from collections import deque
@@ -7,6 +6,8 @@ def train_agent(model, data, device="cuda"):
     import os
     from config import *
     from environment import TradingEnv, ACTIONS
+
+def train_agent(model, data, device="cuda"):
 
     # Use the passed model
     agent = model
