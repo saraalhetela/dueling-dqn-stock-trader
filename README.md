@@ -1,49 +1,71 @@
-# Deep Q-Network Stock Trader
+# Dueling Conv1D DQN Trading Agent
 
 [![Python Version](https://img.shields.io/badge/python-3.10+-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green)](https://opensource.org/licenses/MIT)
 [![PyTorch](https://img.shields.io/badge/pytorch-2.1-red)](https://pytorch.org/)
 [![GitHub Issues](https://img.shields.io/github/issues/saraalhetela/deep-dqn-stock-trader)](https://github.com/your-username/deep-dqn-stock-trader/issues)
 
-A modular Python implementation of a **Deep Q-Network (DQN) agent** for stock trading. This framework allows you to train and evaluate reinforcement learning agents on historical stock data using PyTorch and Gym-style environments.
+A modular Python implementation of a **Dueling Conv1D DQN agent** for stock trading. This framework allows you to train and evaluate reinforcement learning agents on historical stock data using PyTorch and Gym-style environments.
 
 ## Features
 
-- Custom stock trading environment (`StockEnv`) compatible with Gym API  
-- Deep Q-Network agent with experience replay and optional N-step returns  
-- Modular project structure for easy experimentation and extension  
-- Visualization of trading performance and training rewards  
+- Dueling Conv1D Q-Network
+- N-step returns
+- Replay buffer (deque)
+- Reward shaping for profitable trades
+- Evaluation scripts with action correctness metrics
+- Checkpoints and cumulative profit plotting
+- GPU support via PyTorch (CUDA)
 
 ---
 
 ## Installation
 Clone the repository:
 ```bash
-git clone https://github.com/your-username/deep-dqn-stock-trader.git
+git clone https://github.com/your-username/dueling-dqn-stock-trader.git
 cd deep-dqn-stock-trader
 ```
-Create a virtual environment and install dependencies:
+Create a virtual environment:
 
 ```bash
 python -m venv venv
-source venv/bin/activate   # Windows: venv\Scripts\activate
-pip install -U pip
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate     # Windows
+```
+
+Install dependencies:
+
+```bash
+pip install --upgrade pip
 pip install -r requirements.txt
 ```
-Optional: If you have CUDA-enabled GPU, make sure your PyTorch version supports GPU for faster training.
 
 ## Configuration
-All hyperparameters and settings are in config.py:
+### 1- Data: 
+Place your stock CSV in the data/ folder
+
 ```bash
-# Example: config.py
-STOCK_CSV = "data/AAPL_data.csv"
-INITIAL_BALANCE = 10000
-BATCH_SIZE = 64
-GAMMA = 0.99
-LR = 0.001
-EPISODES = 500
+RL_Trading_Agent/data/AAPL_data.csv
 ```
-Update STOCK_CSV to point to your stock data CSV file.
+
+### 2- Hyperparameters:
+All hyperparameters and settings are in config.py:
+
+```bash
+DEVICE = "cuda"  # or "cpu"
+DATA_PATH = "./data/AAPL_data.csv"
+CHECKPOINT_DIR = "./checkpoints"
+OBS_BARS = 50
+BATCH_SIZE = 32
+GAMMA = 0.99
+LEARNING_RATE = 0.0001
+MEMORY_SIZE = 100000
+SYNC_FREQ = 1000
+MAX_STEPS = 150000
+EPSILON_START = 1.0
+EPSILON_END = 0.1
+N_STEP = 2
+```
 
 ## Data Format
 
@@ -57,60 +79,44 @@ The CSV should include:
 | 2025-01-01 | 100.0 | 102.0 | 99.5 | 101.0 | 10000  |
 
 ## Usage
-### Training the Agent
+### Training and Evaluating the Agent
 ```bash
-python train.py
+python main.py
 ```
-+ Trains the DQN agent on historical stock data
-+ Saves the trained model to `models/`
-+ Generates reward plots in `plots/`
-  
-Example reward plot generated:
+This will:
 
-<img width="583" height="455" alt="rewards" src="https://github.com/user-attachments/assets/97a7e491-f8c7-4010-b453-fabd01b1b7b4" />
+1-Load and preprocess the data
+2-Train the RL agent
+3-Evaluate its performance
+4-Plot cumulative profits
 
-
-### Evaluating the Agent
-```bash
-python evaluate.py
-```
-+ Loads a trained model
-+ Simulates trading on historical data
-+ Generates trading performance plots:
-  1. `plots/balance.png` — Shows portfolio balance over time
-  2. `plots/positions.png` — Shows buy/sell actions on stock price
-  3. `plots/rewards_eval.png` — Reward per time step during evaluation
 
 Project Structure
 
 ```
 deep-dqn-stock-trader/
 ├── README.md
-├── requirements.txt
 ├── config.py
-├── environment/
-│   ├── __init__.py
-│   └── stock_env.py
-├── agent/
-│   ├── __init__.py
-│   └── dqn_agent.py
-├── utils/
-│   ├── __init__.py
-│   └── memory.py
+├── data_preprocessing.py
+├── environment.py
+├── evaluate.py
+├── main.py 
+├── model.py
+├── requirements.txt
 ├── train.py
-├── evaluate.py 
-├── plots/        # stores reward/performance plots
-└── data/         # stock CSV files
+├── utils.py
+
+
 ```
 
-+ **config.py** — Hyperparameters and environment settings
-+ **environment/** — Custom stock trading environment
-+ **agent/** — DQN agent and neural network
-+ **utils/** — Helper modules (e.g., replay memory)
-+ **train.py** — Script to train the agent
-+ **evaluate.p** — Script to evaluate a trained agent
-+ **plots/** — Stores reward and performance plots
-+ **data/** — Folder for stock price CSV files
++ **config.py** — Hyperparameters and settings
++ **data_preprocessing.py** — Load and normalize stock data
++ **environment.py** — Trading environment
++ **evaluate.py** — Evaluation scripts
++ **main.py** — Entry point: runs training, evaluation, and logging using all modules
++ **model.py** — Dueling Conv1D network
++ **train.py** — Training loop
++ **utils.py** — helper functions: preprocess_state, N-step return computation, plotting.
 
 ## Data Source
 
@@ -123,13 +129,5 @@ Please follow the original license/terms of use from Kaggle when using this data
 ## License
 
 MIT License. See LICENSE for details.
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (git checkout -b feature-name)
-3. Commit your changes (git commit -m "Add feature")
-4. Push to the branch (git push origin feature-name)
-5. Open a Pull Request
 
 
