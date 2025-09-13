@@ -25,7 +25,6 @@ Clone the repository:
 git clone https://github.com/saraalhetela/dueling-dqn-stock-trader.git
 cd deep-dqn-stock-trader
 ```
-Note: This project has been tested with Python 3.10+ and PyTorch 2.1.
 
 Create a virtual environment:
 
@@ -41,6 +40,9 @@ Install dependencies:
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
+> [!NOTE]
+> This project has been tested with Python 3.10+ and PyTorch 2.1.
+
 
 ## Configuration
 ### 1- Data: 
