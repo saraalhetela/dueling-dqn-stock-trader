@@ -22,7 +22,7 @@ A modular Python implementation of a **Dueling Conv1D DQN agent** for stock trad
 ## Installation
 Clone the repository:
 ```bash
-git clone https://github.com/your-username/dueling-dqn-stock-trader.git
+git clone https://github.com/saraalhetela/dueling-dqn-stock-trader.git
 cd deep-dqn-stock-trader
 ```
 Create a virtual environment:
