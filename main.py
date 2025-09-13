@@ -1,5 +1,3 @@
-# main.py
-
 import torch
 from config import *
 from data_preprocessing import load_and_preprocess
