@@ -1,17 +1,15 @@
-class Config:
-    STOCK_CSV = "data/AAPL_data.csv"
-    batch_size = 64
-    memory_size = 10000
-    gamma = 0.99
-    learning_rate = 0.0001
-    epsilon = 1.
+# config.py
 
-    
-    initial_balance = 10000
-    max_steps = 200
-    target_update = 10
-    n_step = 3
-    EPISODES = 500
-
-
-
+DEVICE = "cuda"
+DATA_PATH = "./data/AAPL_data.csv"
+CHECKPOINT_DIR = "./checkpoints"
+OBS_BARS = 50
+BATCH_SIZE = 32
+GAMMA = 0.99
+LEARNING_RATE = 1e-4
+MEMORY_SIZE = 100000
+SYNC_FREQ = 1000
+MAX_STEPS = 150000
+EPSILON_START = 1.0
+EPSILON_END = 0.1
+N_STEP = 2
