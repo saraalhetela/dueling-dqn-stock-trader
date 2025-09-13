@@ -25,6 +25,8 @@ Clone the repository:
 git clone https://github.com/saraalhetela/dueling-dqn-stock-trader.git
 cd deep-dqn-stock-trader
 ```
+Note: This project has been tested with Python 3.10+ and PyTorch 2.1.
+
 Create a virtual environment:
 
 ```bash
@@ -85,16 +87,16 @@ python main.py
 ```
 This will:
 
-1-Load and preprocess the data
-2-Train the RL agent
-3-Evaluate its performance
-4-Plot cumulative profits
++ Load and preprocess the data
++ Train the RL agent
++ Evaluate its performance
++ Plot cumulative profits
 
 
 Project Structure
 
 ```
-deep-dqn-stock-trader/
+dueling-dqn-stock-trader/
 ├── README.md
 ├── config.py
 ├── data_preprocessing.py
@@ -104,8 +106,7 @@ deep-dqn-stock-trader/
 ├── model.py
 ├── requirements.txt
 ├── train.py
-├── utils.py
-
+└── utils.py
 
 ```
 
@@ -117,6 +118,19 @@ deep-dqn-stock-trader/
 + **model.py** — Dueling Conv1D network
 + **train.py** — Training loop
 + **utils.py** — helper functions: preprocess_state, N-step return computation, plotting.
+
+## Results
+After training for 150,000 steps on Apple (AAPL) stock data, the agent learned to trade with consistent profit.
+
+###Cumulative Profit Over Time
+
+Below is an example plot showing cumulative profit during evaluation:
+
+<img width="571" height="455" alt="Untitled" src="https://github.com/user-attachments/assets/6e95a1dd-990d-4060-a89b-29c72757b483" />
+
+
+## Contributing
+Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
 
 ## Data Source
 
