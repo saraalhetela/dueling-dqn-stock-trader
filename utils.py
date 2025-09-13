@@ -23,7 +23,7 @@ def n_step_return(rewards, gamma, next_q=0.0, done=False):
         ret += (gamma ** len(rewards)) * next_q
     return ret
 
-def plot_profits(profits, title="Cumulative Profit Over Time"):
+def plot_cumulative_profit(profits, title="Cumulative Profit Over Time"):
     """
     Plot cumulative profits.
     """
@@ -34,3 +34,5 @@ def plot_profits(profits, title="Cumulative Profit Over Time"):
     plt.ylabel("Profit (%)")
     plt.grid(True)
     plt.show()
+import matplotlib.pyplot as plt
+
