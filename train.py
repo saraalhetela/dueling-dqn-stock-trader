@@ -5,13 +5,15 @@ import numpy as np
 from collections import deque
 import random
 import os
+import copy
 from environment import TradingEnv, ACTIONS
 
 def train_agent(model, data, device="cuda"):
 
     # Use the passed model
     agent = model
-    target = torch.clone(agent).to(device)
+    target = copy.deepcopy(agent)
+    target.to(device)
     target.load_state_dict(agent.state_dict())
     optimizer = torch.optim.RMSprop(agent.parameters(), lr=LEARNING_RATE)
     loss_fn = torch.nn.MSELoss()
