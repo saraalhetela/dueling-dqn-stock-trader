@@ -1,75 +1,44 @@
-import os
-import pandas as pd
-import matplotlib.pyplot as plt
-from environment.stock_env import StockEnv
-from agent.dqn_agent import DQNAgent
-from config import Config
+# evaluate.py
+import torch
+import numpy as np
+from environment import TradingEnv, ACTIONS
 
-# Create plots folder if it doesn't exist
-os.makedirs("plots", exist_ok=True)
+def evaluate_agent(model, data, device="cuda", episodes=100, obs_bars=50, max_steps=500):
+    model.eval()
+    total_rewards = []
+    action_counts = {name: 0 for name in ACTIONS.values()}
+    win_count = 0
 
-# Load data
-data = pd.read_csv(Config.STOCK_CSV)
+    for episode in range(episodes):
+        env = TradingEnv(data, obs_bars=obs_bars, test=True)
+        state = env.reset()
+        state = torch.from_numpy(state).unsqueeze(0).float().to(device)
+        episode_reward = 0
+        done = False
+        step = 0
 
-# Initialize environment and agent
-env = StockEnv(data)
-agent = DQNAgent(env.observation_space.shape[0], env.action_space.n, Config)
+        while not done and step < max_steps:
+            with torch.no_grad():
+                qvals = model(state)
+                action_idx = torch.argmax(qvals, dim=1).item()
+                action_name = ACTIONS[action_idx]
 
-# Reset environment
-state = env.reset()
-done = False
+            action_counts[action_name] += 1
+            next_state, reward, done = env.step(action_name)
+            state = torch.from_numpy(next_state).unsqueeze(0).float().to(device)
+            episode_reward += reward
+            step += 1
 
-# Track metrics
-balance_history = []
-positions = []
-rewards_eval = []
+        total_rewards.append(episode_reward)
+        if episode_reward > 0:
+            win_count += 1
 
-while not done:
-    action = agent.select_action(state, epsilon=0)  # deterministic
-    next_state, reward, done, info = env.step(action)
+    print(f"Tested over {episodes} episodes.")
+    print(f"Average reward: {np.mean(total_rewards):.2f}")
+    print(f"Win rate (>0 reward): {win_count / episodes * 100:.2f}%")
+    print("Action distribution:")
+    for action_name, count in action_counts.items():
+        print(f"  {action_name}: {count} ({count / sum(action_counts.values()) * 100:.2f}%)")
 
-    balance_history.append(env.balance)
-    positions.append((env.current_step, action))
-    rewards_eval.append(reward)
-
-    state = next_state
-
-# --- PLOTS ---
-
-# 1. Portfolio Balance
-plt.figure()
-plt.plot(balance_history)
-plt.title("Portfolio Balance Over Time")
-plt.xlabel("Time Step")
-plt.ylabel("Balance ($)")
-plt.grid(True)
-plt.savefig("plots/balance.png")
-plt.close()
-
-# 2. Buy/Sell Positions
-plt.figure()
-plt.plot(data["Close"], label="Close Price")
-buys = [step for step, act in positions if act == 1]
-sells = [step for step, act in positions if act == 2]
-plt.scatter(buys, data["Close"].iloc[buys], marker="^", color="g", label="Buy")
-plt.scatter(sells, data["Close"].iloc[sells], marker="v", color="r", label="Sell")
-plt.title("Buy/Sell Positions on Stock Price")
-plt.xlabel("Time Step")
-plt.ylabel("Price ($)")
-plt.legend()
-plt.grid(True)
-plt.savefig("plots/positions.png")
-plt.close()
-
-# 3. Rewards During Evaluation
-plt.figure()
-plt.plot(rewards_eval)
-plt.title("Reward per Step (Evaluation)")
-plt.xlabel("Time Step")
-plt.ylabel("Reward")
-plt.grid(True)
-plt.savefig("plots/rewards_eval.png")
-plt.close()
-
-# Summary
-print(f"Total evaluation reward: {sum(rewards_eval)}")
+    model.train()
+    return total_rewards, action_counts
