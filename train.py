@@ -1,11 +1,11 @@
 # train.py
-    import torch
-    import numpy as np
-    from collections import deque
-    import random
-    import os
-    from config import *
-    from environment import TradingEnv, ACTIONS
+import torch
+import numpy as np
+from collections import deque
+import random
+import os
+from config import *
+from environment import TradingEnv, ACTIONS
 
 def train_agent(model, data, device="cuda"):
 
