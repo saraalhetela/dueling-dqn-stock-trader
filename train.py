@@ -1,5 +1,5 @@
 import torch
-from config import DEVICE, BATCH_SIZE, OBS_BARS, LEARNING_RATE, MAX_STEPS
+from config import *
 
 import numpy as np
 from collections import deque
