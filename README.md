@@ -122,7 +122,7 @@ dueling-dqn-stock-trader/
 ## Results
 After training for 150,000 steps on Apple (AAPL) stock data, the agent learned to trade with consistent profit.
 
-###Cumulative Profit Over Time
+### Cumulative Profit Over Time
 
 Below is an example plot showing cumulative profit during evaluation:
 
