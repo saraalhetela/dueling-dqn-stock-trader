@@ -3,6 +3,19 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 
+def plot_cumulative_profit(profits, title="Cumulative Profit Over Time"):
+    """
+    Plot cumulative profits over time.
+    """
+    plt.figure(figsize=(10, 5))
+    plt.plot(profits)
+    plt.title(title)
+    plt.xlabel("Time Step")
+    plt.ylabel("Profit (%)")
+    plt.grid(True)
+    plt.show()
+
+
 def preprocess_state(state, input_shape, add_noise=False):
     """
     Reshape state for neural network input.
@@ -23,15 +36,4 @@ def n_step_return(rewards, gamma, next_q=0.0, done=False):
         ret += (gamma ** len(rewards)) * next_q
     return ret
 
-def plot_cumulative_profit(profits, title="Cumulative Profit Over Time"):
-    """
-    Plot cumulative profits over time.
-    """
-    plt.figure(figsize=(10, 5))
-    plt.plot(profits)
-    plt.title(title)
-    plt.xlabel("Time Step")
-    plt.ylabel("Profit (%)")
-    plt.grid(True)
-    plt.show()
 
