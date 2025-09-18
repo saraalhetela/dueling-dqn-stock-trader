@@ -4,7 +4,7 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 
-def plot_profits(profits, title="Cumulative Profit Over Time"):
+def plot_profits(profits, title="Cumulative Profit Over Time", filename="profits.png"):
     """
     Plot cumulative profits over time.
     """
