@@ -7,12 +7,25 @@ def plot_profits(profits, title="Cumulative Profit Over Time"):
     """
     Plot cumulative profits over time.
     """
+    # Create folder if it doesn't exist
+    os.makedirs("plots", exist_ok=True)
+
+    # Plot
     plt.figure(figsize=(10, 5))
     plt.plot(profits)
     plt.title(title)
     plt.xlabel("Time Step")
     plt.ylabel("Profit (%)")
     plt.grid(True)
+
+    # Save to file
+    save_path = os.path.join("plots", filename)
+    plt.savefig(save_path, dpi=300, bbox_inches="tight")
+
+    # Show the plot (works in notebook with %matplotlib inline)
+    plt.show()
+
+    print(f"📂 Plot saved to {save_path}")
     plt.show()
 
 
