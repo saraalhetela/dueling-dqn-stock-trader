@@ -174,7 +174,7 @@ After training for 150,000 steps on Apple (AAPL) stock data, the agent learned t
 
 Below is an example plot showing cumulative profit during evaluation:
 
-<img width="571" height="455" alt="Untitled" src="https://github.com/user-attachments/assets/6e95a1dd-990d-4060-a89b-29c72757b483" />
+<img width="850" height="470" alt="Untitled" src="https://github.com/user-attachments/assets/3f426e63-295c-47ff-bf66-3ba5271157d2" />
 
 
 ## Contributing
