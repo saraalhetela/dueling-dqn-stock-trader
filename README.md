@@ -116,12 +116,6 @@ e.g., data/AAPL_data.
 !pip install -r requirements.txt
 ```
 
-### Set up notebook plotting
-
-```bash
-%matplotlib inline
-```
-
 ### mport project modules
 
 ```bash
