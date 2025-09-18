@@ -6,6 +6,8 @@ from model import DuelingConv1D
 from train import train_agent  # We'll slightly modify train.py to expose a train_agent() function
 from evaluate import evaluate_agent
 from utils import plot_profits
+import matplotlib.pyplot as plt
+
 
 def main():
     print("📊 Loading and preprocessing data...")
@@ -26,6 +28,8 @@ def main():
 
     print("📈 Plotting cumulative profits...")
     plot_profits(profits)
+    plt.savefig("plots/profits.png", dpi=300, bbox_inches="tight")
+
 
     print("🎯 Evaluation finished.")
     print(f"Total Rewards Avg: {sum(total_rewards)/len(total_rewards):.2f}")
