@@ -23,9 +23,6 @@ def plot_profits(profits, title="Cumulative Profit Over Time", filename="profits
     save_path = os.path.join("plots", filename)
     plt.savefig(save_path, dpi=300, bbox_inches="tight")
 
-    # Show the plot (works in notebook with %matplotlib inline)
-    plt.show()
-
     print(f"📂 Plot saved to {save_path}")
     plt.show()
 
@@ -49,5 +46,3 @@ def n_step_return(rewards, gamma, next_q=0.0, done=False):
     if not done:
         ret += (gamma ** len(rewards)) * next_q
     return ret
-
-
