@@ -93,9 +93,61 @@ This will:
 + Train the RL agent
 + Evaluate its performance
 + Plot cumulative profits
++ create plots/ folder and save plots to plots/ as PNG images
 
+## Running in a Jupyter Notebook
 
-Project Structure
+You can also train and evaluate the agent inside a notebook.
+
+### Clone the repository
+
+```bash
+!git clone https://github.com/saraalhetela/dueling-dqn-stock-trader.git
+%cd dueling-dqn-stock-trader
+```
+
+### Add your stock CSV file into the data/ folder 
+
+e.g., data/AAPL_data.
+
+### Install requirements
+
+```bash
+!pip install -r requirements.txt
+```
+
+### Set up notebook plotting
+
+```bash
+%matplotlib inline
+```
+
+### mport project modules
+
+```bash
+from config import *
+from environment import TradingEnv, ACTIONS
+from model import DuelingConv1D
+from train import train_agent
+from evaluate import evaluate_agent
+from utils import preprocess_state, plot_profits
+```
+
+### Run training and evaluation
+
+```bash
+!python main.py
+```
+
+Alternatively, you can call main() directly from inside your notebook
+
+```bash
+from main import main
+main()
+```
+This way, all output (logs + plots) will display inside your notebook
+
+## Project Structure
 
 ```
 dueling-dqn-stock-trader/
