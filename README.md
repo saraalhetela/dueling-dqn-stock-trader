@@ -20,6 +20,7 @@ A modular Python implementation of a **Dueling Conv1D DQN agent** for stock trad
 ---
 
 ## Installation
+
 Clone the repository:
 ```bash
 git clone https://github.com/saraalhetela/dueling-dqn-stock-trader.git
@@ -53,6 +54,7 @@ RL_Trading_Agent/data/AAPL_data.csv
 ```
 
 ### 2- Hyperparameters:
+
 All hyperparameters and settings are in config.py:
 
 ```bash
@@ -168,7 +170,8 @@ dueling-dqn-stock-trader/
 + **utils.py** — helper functions: preprocess_state, N-step return computation, plotting.
 
 ## Results
-After training for 150,000 steps on Apple (AAPL) stock data, the agent learned to trade with consistent profit.
+
+After training for 150,000 steps on Apple (AAPL) stock data, the agent achieved a peak cumulative profit of 870% on the evaluation set, with a consistent upward trend across 175 timesteps.
 
 ### Cumulative Profit Over Time
 
@@ -178,6 +181,7 @@ Below is an example plot showing cumulative profit during evaluation:
 
 
 ## Contributing
+
 Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
 
 ## Data Source
