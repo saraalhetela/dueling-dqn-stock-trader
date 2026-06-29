@@ -1,41 +1,67 @@
 import torch
 from config import *
 from data_preprocessing import load_and_preprocess
-from environment import TradingEnv, ACTIONS
+from environment import ACTIONS
 from model import DuelingConv1D
-from train import train_agent  # We'll slightly modify train.py to expose a train_agent() function
-from evaluate import evaluate_agent
-from utils import plot_profits
-import matplotlib.pyplot as plt
-
+from train import train_agent
+from evaluate import evaluate_agent, plot_results
+import pandas as pd
 
 def main():
-    print("📊 Loading and preprocessing data...")
-    data = load_and_preprocess(DATA_PATH)
+    print(f"Device: {DEVICE}")
 
-    print("🤖 Initializing model...")
-    device = DEVICE
-    input_channels = 5
-    output_size = len(ACTIONS)
-    model = DuelingConv1D(input_channels, output_size).to(device)
+    # Raw data for B&H baseline (before normalisation)
+    raw_df = pd.read_csv(DATA_PATH)
+    raw_df = raw_df.drop(columns=["volume", "Name"], errors="ignore")
 
-    print("⚡ Starting training...")
-    # This will return the trained model and profits history
-    trained_model, profits = train_agent(model, data, device=device)
+    print("\nLoading and splitting data...")
+    train_data, val_data, test_data = load_and_preprocess(
+        DATA_PATH, train_ratio=TRAIN_RATIO, val_ratio=VAL_RATIO
+    )
 
-    print("✅ Training completed. Evaluating agent...")
-    total_rewards, action_counts = evaluate_agent(trained_model, data, device=device, episodes=100)
+    # Raw test slice for buy-and-hold calculation
+    n = len(raw_df)
+    test_start = int(n * (TRAIN_RATIO + VAL_RATIO))
+    raw_test_df = raw_df.iloc[test_start:].reset_index(drop=True)
 
-    print("📈 Plotting cumulative profits...")
-    plot_profits(profits)
-    plt.savefig("plots/profits.png", dpi=300, bbox_inches="tight")
+    print("\nInitializing model...")
+    model = DuelingConv1D(
+        input_channels=5,
+        output_size=len(ACTIONS),
+        obs_bars=OBS_BARS
+    ).to(DEVICE)
+    print(f"Parameters: {sum(p.numel() for p in model.parameters()):,}")
 
+    print("\nTraining...")
+    trained_model, train_profits, val_rewards = train_agent(
+        model, train_data, val_data, device=DEVICE
+    )
 
-    print("🎯 Evaluation finished.")
-    print(f"Total Rewards Avg: {sum(total_rewards)/len(total_rewards):.2f}")
-    print("Action distribution:")
-    for action_name, count in action_counts.items():
-        print(f"  {action_name}: {count} ({count / sum(action_counts.values()) * 100:.2f}%)")
+    print("\nEvaluating on TEST set...")
+    cum_profits, action_counts, total_reward, bh_return, trades = evaluate_agent(
+        trained_model, test_data, raw_test_df, device=DEVICE, obs_bars=OBS_BARS
+    )
+
+    plot_results(cum_profits, bh_return, train_profits, trades)
+
+    # Save results for README generation
+    results = {
+        "agent_reward": total_reward,
+        "bh_return": bh_return,
+        "alpha": total_reward - bh_return,
+        "n_trades": len(trades),
+        "win_rate": len([t for t in trades if t[2]>0]) / len(trades) * 100 if trades else 0,
+        "avg_pnl": sum(t[2] for t in trades) / len(trades) if trades else 0,
+        "train_bars": len(train_data),
+        "val_bars": len(val_data),
+        "test_bars": len(test_data),
+        "action_counts": action_counts,
+        "total_steps": sum(action_counts.values()),
+    }
+    import json
+    with open("results.json", "w") as f:
+        json.dump(results, f, indent=2)
+    print("\nResults saved to results.json")
 
 if __name__ == "__main__":
     main()
