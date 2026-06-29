@@ -61,11 +61,6 @@ The agent stays above the buy-and-hold line for the majority of the test period.
 
 Consistent upward trend across 350 episodes with no plateau or collapse. The 20-episode moving average rises from ~0 to ~250, confirming the agent is learning and not just benefiting from reward shaping on held positions.
 
-### Validation reward during training
-
-<img width="1650" height="600" alt="val_curve" src="https://github.com/user-attachments/assets/53a68591-8cd6-4676-8ec7-4cdd7e2cef41" />
-
-
 ---
 
 ## Installation
