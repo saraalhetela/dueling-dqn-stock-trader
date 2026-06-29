@@ -135,8 +135,7 @@ dueling-dqn-stock-trader/
 ├── requirements.txt
 ├── plots/
 │   ├── test_vs_bh.png
-│   ├── train_profits.png
-│   └── val_curve.png
+│   └── train_profits.png
 └── data/
     └── AAPL_data.csv
 ```
