@@ -1,199 +1,157 @@
-# Dueling Conv1D DQN Trading Agent
 
+# Dueling Conv1D DQN Trading Agent
+ 
 [![Python Version](https://img.shields.io/badge/python-3.10+-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green)](https://opensource.org/licenses/MIT)
 [![PyTorch](https://img.shields.io/badge/pytorch-2.1-red)](https://pytorch.org/)
-[![GitHub Issues](https://img.shields.io/github/issues/saraalhetela/deep-dqn-stock-trader)](https://github.com/your-username/deep-dqn-stock-trader/issues)
-
-A modular Python implementation of a **Dueling Conv1D DQN agent** for stock trading. This framework allows you to train and evaluate reinforcement learning agents on historical stock data using PyTorch and Gym-style environments.
-
-## Features
-
-- Dueling Conv1D Q-Network
-- N-step returns
-- Replay buffer (deque)
-- Reward shaping for profitable trades
-- Evaluation scripts with action correctness metrics
-- Checkpoints and cumulative profit plotting
-- GPU support via PyTorch (CUDA)
-
+ 
+A modular PyTorch implementation of a **Dueling Double DQN agent** for stock trading, with N-step returns, proper chronological train/val/test splits, and a buy-and-hold baseline for honest benchmarking.
+ 
 ---
-
+ 
+## Architecture
+ 
+- **Dueling Conv1D Q-Network** — shared 1D convolutional feature extractor over a 50-bar lookback window, with separate value and advantage heads
+- **Double DQN** — action selection by online network, Q-value evaluation by target network, reducing overestimation bias
+- **N-step returns** (N=2) — multi-step TD targets for faster credit assignment
+- **Huber loss** — more stable than MSE against large TD errors early in training
+- **Gradient clipping** — prevents exploding gradients destabilising learned weights
+- **CPU replay buffer** — transitions stored as numpy arrays and moved to GPU only at sample time, preventing VRAM exhaustion over long training runs
+---
+ 
+## Results
+ 
+Trained on Apple (AAPL) daily OHLC data, Feb 2013 – Feb 2018 (1,259 bars).  
+Data source: [Kaggle — S&P 500 5-Year Individual Stocks](https://www.kaggle.com/datasets/camnugent/sandp500) → `individual_stocks_5yr/AAPL_data.csv`  
+Hardware: CUDA GPU, 150,000 training steps, ε decayed from 1.0 → 0.10.
+ 
+### Data split (chronological — never shuffled)
+ 
+| Split | Bars | Purpose |
+|-------|------|---------|
+| Train | 881  | Agent learning |
+| Val   | 189  | Generalisation check during training |
+| **Test** | **189** | **Final evaluation — never seen during training** |
+ 
+### Test set performance (held-out data)
+ 
+| Metric | Value |
+|--------|-------|
+| Agent cumulative reward | **+18.15%** |
+| Buy-and-hold return | +3.85% |
+| **Alpha vs buy-and-hold** | **+14.30%** |
+| Total trades | 20 |
+| Win rate | 70.0% |
+| Avg trade P&L | +1.01% |
+ 
+The agent completed 20 trades on the held-out test period with a 70% win rate and positive average P&L per trade, outperforming a passive buy-and-hold strategy by 14.30 percentage points over the same window.
+ 
+### Test set: agent cumulative reward vs buy-and-hold
+ 
+![Test vs Buy-and-Hold](plots/test_vs_bh.png)
+ 
+The agent stays above the buy-and-hold line for the majority of the test period. The staircase pattern reflects the long-only strategy — reward accumulates in discrete steps at each trade close. Green shading marks profitable trade windows, red marks losing ones. The single mid-period drawdown (steps ~25–60) is the agent's only extended spell below its prior peak before recovering strongly.
+ 
+### Training episode rewards
+ 
+![Training Profits](plots/train_profits.png)
+ 
+Consistent upward trend across 350 episodes with no plateau or collapse. The 20-episode moving average rises from ~0 to ~250, confirming the agent is learning and not just benefiting from reward shaping on held positions.
+ 
+### Validation reward during training
+ 
+![Validation Curve](plots/val_curve.png)
+ 
+---
+ 
 ## Installation
-
-Clone the repository:
+ 
 ```bash
-git clone https://github.com/saraalhetela/dueling-dqn-stock-trader.git
-cd deep-dqn-stock-trader
-```
-
-Create a virtual environment:
-
-```bash
+git clone https://github.com/your-username/dueling-dqn-stock-trader.git
+cd dueling-dqn-stock-trader
 python -m venv venv
-source venv/bin/activate  # Linux/Mac
-venv\Scripts\activate     # Windows
-```
-
-Install dependencies:
-
-```bash
-pip install --upgrade pip
+source venv/bin/activate      # Linux / Mac
+# venv\Scripts\activate       # Windows
 pip install -r requirements.txt
 ```
-> [!NOTE]
-> This project has been tested with Python 3.10+ and PyTorch 2.1.
-
-
+ 
+## Data
+ 
+Place your stock CSV at:
+ 
+```
+data/AAPL_data.csv
+```
+ 
+Expected columns: `date, open, high, low, close, volume, Name`
+ 
+Download from: [Kaggle S&P 500 dataset](https://www.kaggle.com/datasets/camnugent/sandp500) → `individual_stocks_5yr/AAPL_data.csv`
+ 
 ## Configuration
-### 1- Data: 
-Place your stock CSV in the data/ folder
-
-```bash
-RL_Trading_Agent/data/AAPL_data.csv
-```
-
-### 2- Hyperparameters:
-
-All hyperparameters and settings are in config.py:
-
-```bash
-DEVICE = "cuda"  # or "cpu"
-DATA_PATH = "./data/AAPL_data.csv"
-CHECKPOINT_DIR = "./checkpoints"
-OBS_BARS = 50
-BATCH_SIZE = 32
-GAMMA = 0.99
-LEARNING_RATE = 0.0001
-MEMORY_SIZE = 100000
-SYNC_FREQ = 1000
-MAX_STEPS = 150000
+ 
+All hyperparameters are in `config.py`:
+ 
+```python
+DEVICE        = "cuda" if torch.cuda.is_available() else "cpu"
+OBS_BARS      = 50        # lookback window in bars
+BATCH_SIZE    = 64
+GAMMA         = 0.99
+LEARNING_RATE = 1e-4
+MEMORY_SIZE   = 100_000
+SYNC_FREQ     = 1_000     # target network sync frequency (steps)
+MAX_STEPS     = 150_000   # total training environment steps
 EPSILON_START = 1.0
-EPSILON_END = 0.1
-N_STEP = 2
+EPSILON_END   = 0.05
+N_STEP        = 2
+TRAIN_RATIO   = 0.70
+VAL_RATIO     = 0.15
 ```
-
-## Data Format
-
-Place your stock price CSV in the `data/` folder:
-```bash
-data/stock_prices.csv
-```
-The CSV should include:
-| Date       | Open  | High  | Low  | Close | Volume |
-| ---------- | ----- | ----- | ---- | ----- | ------ |
-| 2025-01-01 | 100.0 | 102.0 | 99.5 | 101.0 | 10000  |
-
+ 
 ## Usage
-### Training and Evaluating the Agent
+ 
 ```bash
 python main.py
 ```
+ 
 This will:
-
-+ Load and preprocess the data
-+ Train the RL agent
-+ Evaluate its performance
-+ Plot cumulative profits
-+ create plots/ folder and save plots to plots/ as PNG images
-
-## Running in a Jupyter Notebook
-
-You can also train and evaluate the agent inside a notebook.
-
-### Clone the repository
-
-```bash
-!git clone https://github.com/saraalhetela/dueling-dqn-stock-trader.git
-%cd dueling-dqn-stock-trader
-```
-
-### Add your stock CSV file into the data/ folder 
-
-e.g., data/AAPL_data.
-
-### Install requirements
-
-```bash
-!pip install -r requirements.txt
-```
-
-### mport project modules
-
-```bash
-from config import *
-from environment import TradingEnv, ACTIONS
-from model import DuelingConv1D
-from train import train_agent
-from evaluate import evaluate_agent
-from utils import preprocess_state, plot_profits
-```
-
-### Run training and evaluation
-
-```bash
-!python main.py
-```
-
-Alternatively, you can call main() directly from inside your notebook
-
-```bash
-from main import main
-main()
-```
-This way, all output (logs + plots) will display inside your notebook
-
-## Project Structure
-
+1. Load and split data chronologically (70 / 15 / 15)
+2. Train the agent, printing a checkpoint log and saving weights every 5,000 steps
+3. Evaluate on the held-out test set only
+4. Save plots to `plots/` and metrics to `results.json`
+---
+ 
+## Project structure
+ 
 ```
 dueling-dqn-stock-trader/
-├── README.md
-├── config.py
-├── data_preprocessing.py
-├── environment.py
-├── evaluate.py
-├── main.py 
-├── model.py
+├── config.py               — hyperparameters and device config
+├── data_preprocessing.py   — load, clean, and chronologically split data
+├── environment.py          — Gym-style trading environment (long-only, 0.1% commission)
+├── model.py                — Dueling Conv1D network with dynamic flat-size computation
+├── train.py                — training loop (Double DQN, N-step, Huber loss, grad clipping)
+├── evaluate.py             — test evaluation with buy-and-hold baseline and trade logging
+├── utils.py                — plotting utilities
+├── main.py                 — entry point
 ├── requirements.txt
-├── train.py
-└── utils.py
-
+├── plots/
+│   ├── test_vs_bh.png
+│   ├── train_profits.png
+│   └── val_curve.png
+└── data/
+    └── AAPL_data.csv
 ```
-
-+ **config.py** — Hyperparameters and settings
-+ **data_preprocessing.py** — Load and normalize stock data
-+ **environment.py** — Trading environment
-+ **evaluate.py** — Evaluation scripts
-+ **main.py** — Entry point: runs training, evaluation, and logging using all modules
-+ **model.py** — Dueling Conv1D network
-+ **train.py** — Training loop
-+ **utils.py** — helper functions: preprocess_state, N-step return computation, plotting.
-
-## Results
-
-After training for 150,000 steps on Apple (AAPL) stock data, the agent achieved a peak cumulative profit of 870% on the evaluation set, with a consistent upward trend across 175 timesteps.
-
-### Cumulative Profit Over Time
-
-Below is an example plot showing cumulative profit during evaluation:
-
-<img width="850" height="470" alt="Untitled" src="https://github.com/user-attachments/assets/3f426e63-295c-47ff-bf66-3ba5271157d2" />
-
-
-## Contributing
-
-Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
-
-## Data Source
-
-The stock price data used in this project is sourced from [Kaggle: S&P 500 5-Year Individual Stocks](https://www.kaggle.com/datasets/szrlee/stock-time-series-5yr)  
-Specifically, the AAPL stock data CSV: `individual_stocks_5yr/AAPL_data.csv`.
-
-Please follow the original license/terms of use from Kaggle when using this data.
-
-
+ 
+---
+ 
+## Known limitations and future work
+ 
+- **Replay buffer:** uniform random sampling. Prioritised Experience Replay (PER) would improve sample efficiency by replaying high-error transitions more frequently.
+- **State representation:** position flag and unrealised P&L are broadcast scalars across all 50 timesteps. A cleaner design would pass portfolio features through a dedicated FC branch separate from the convolutional feature extractor.
+- **Single asset, long-only:** no short positions, no portfolio-level risk controls, no position sizing beyond all-in / all-out.
+- **Commission model:** flat 0.1% per trade — a simplification that ignores slippage and market impact.
+- **Single stock, single run:** results are on one ticker over one historical period. Testing across multiple assets and time periods would strengthen the generalisation claim.
+---
+ 
 ## License
-
+ 
 MIT License. See LICENSE for details.
-
-
